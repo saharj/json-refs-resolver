@@ -1,0 +1,21 @@
+{
+  "name": "json-refs-resolver",
+  "version": "1.0.0",
+  "description": "JSON Reference Resolver",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "json",
+    "json-pointer",
+    "json-refs"
+  ],
+  "author": "Sahar Jafari",
+  "license": "ISC",
+  "dependencies": {
+    "es6-promise": "^3.2.1",
+    "isomorphic-fetch": "^2.2.1",
+    "lodash": "^4.15.0"
+  }
+}
