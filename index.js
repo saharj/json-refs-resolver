@@ -1,6 +1,8 @@
 require('es6-promise').polyfill();
-require('isomorphic-fetch');
+var fetch = require('isomorphic-fetch');
 var _ = require('lodash');
+var async = require('async');
+// var debug = require('debug')('json-refs-resolver');
 
 /*
  *
@@ -10,6 +12,7 @@ function resolve(input, callback) {
 	if(_.isEmpty(input)) {
 		return callback(null, input);
 	}
+
 	if(!_.isArray(input) && !_.isObject(input)) {
 		return callback(null, input);
 	}
@@ -18,12 +21,63 @@ function resolve(input, callback) {
 		return callback(null, input.map(resolve));
 	}
 
-	Object.keys(input).forEach(function(key) {
-		if(isJsonRef(input[key])) {
-			input[key] = walk(input, parseJsonRefFragmentPath(input[key].$ref))
+	var keys = _.keys(input);
+
+	async.each(
+		keys,
+		function (key, callback) {
+			if(isJsonRef(input[key])) {
+				var ref = input[key].$ref;
+				
+				// absolute URL
+				if (/^(http|https)/.test(ref)) {
+					fetch(ref)
+						.then(function (resp) {
+							return resp.json();
+						})
+						.then(function (json) {	
+							resolve(json, function(error, result) {
+								if (error) return callback(error);
+
+								if (/#\//.test(ref)) {
+									var fragmentRef = ref.substring(ref.indexOf('#/'));
+									input[key] = walk(result, parseJsonRefFragmentPath(fragmentRef));
+								} else {
+									input[key] = result;								
+								}
+
+								callback(null);
+							});
+						})
+						.catch(callback)
+				}
+				
+				// fragment URL
+				else if (/^#\//.test(ref)) {
+					try {
+						input[key] = walk(input, parseJsonRefFragmentPath(ref));
+						callback(null);
+					} catch (err) {
+						callback(err);
+					}
+				}
+
+				// relative URL
+				else if (/^\.\//.test(ref)) {
+					// TODO
+				}
+			} else {
+				callback(null);
+			}
+		},
+		function (error) {
+			if (error) {
+				callback(error);
+			} else {
+				callback(null, input);
+			}
 		}
-	});
-	callback(null, input);
+	);
 };
 
 
