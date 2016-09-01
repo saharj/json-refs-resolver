@@ -1,6 +1,7 @@
 var resolve = require('../index.js').resolve;
 var expect = require('chai').expect;
- 
+var path = require('path');
+
 describe('remote JSON Pointers', function () {
 	it('of absolute paths are resolved', function(done) {
 		var input = {
@@ -39,7 +40,16 @@ describe('remote JSON Pointers', function () {
 		});
 	});
 
-	// TODO
-	describe('for relative paths', function() {
+	it('of relative paths are resolved', function(done) {
+		var input = {
+			foo: {$ref: './fixtures/foo.json'}
+		};
+		var output = {
+			foo: {bar: 18}
+		};
+		resolve(input, {basePath: __dirname}, function(error, result) {
+			expect(result).to.deep.equal(output);
+			done(error);
+		});
 	});
 });
