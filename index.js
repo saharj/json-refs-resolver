@@ -41,13 +41,8 @@ function resolve(input, options, callback) {
         return callback(null, input);
     }
 
-    if(_.isArray(input)) {
-        return async.map(input, resolve, callback);
-    }
-
 
     var keys = _.keys(input);
-
 
     async.each(
         keys,
