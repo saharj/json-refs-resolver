@@ -24,3 +24,44 @@ describe('basics', function() {
 		});
 	});
 });
+
+describe('arrays', function() {
+	it('resolves a pointer to an array item', function(done) {
+		var input = [{$ref: '#/1'}, 6];
+		var output = [6, 6];
+		resolve(input, function(error, result) {
+			expect(result).to.deep.equal(output);
+			done(error);
+		});
+	});
+
+	it('resolves a deep pointer in an array', function(done) {
+		var input = [
+			{foo: {bar: 42}},
+			{$ref: '#/0/foo/bar'}
+		];
+		var output = [
+			{foo: {bar: 42}},
+			42
+		];
+		resolve(input, function(error, result) {
+			expect(result).to.deep.equal(output);
+			done(error);
+		});
+	});
+
+	it('resolves references that go into an array', function(done) {
+		var input = {
+			foo: {bar: [{baz: 23}]},
+			deep: {$ref: '#/foo/bar/0/baz'}
+		};
+		var output = {
+			foo: {bar: [{baz: 23}]},
+			deep: 23
+		};
+		resolve(input, function(error, result) {
+			expect(result).to.deep.equal(output);
+			done(error);
+		});
+	})
+})
